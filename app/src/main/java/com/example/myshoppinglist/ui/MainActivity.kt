@@ -2,6 +2,10 @@ package com.example.myshoppinglist.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -51,26 +55,31 @@ class MainActivity : AppCompatActivity() {
 //                binding.listRecyclerview.adapter = adapter
 //        }
 
+        lifecycleScope.launch {
+            viewModel.todoListFlow.collect {
 
-        viewModel.allShoppingItems().observe(this, Observer {
-            adapter.list = it
-            adapter.notifyDataSetChanged()
-        })
-
+                adapter.list = it
+                adapter.notifyDataSetChanged()
+            }
+        }
         binding.listRecyclerview.adapter = adapter
+
 
         // on ClickListener on button to open dialog box
         binding.addItem.setOnClickListener {
             addItemDialogue(this, object : dialogueListener {
                 override fun onAddBtnClick(item: Item) {
                     viewModel.insert(item)
+
                 }
 
             }).show()
         }
     }
-    suspend fun getList(flow : Flow<List<Item>>) : List<Item>{
-        println("123 123 "+flow.first())
-         return flow.first()
+
+    fun getList(viewModel: listViewModel) : List<Item>{
+        if (viewModel.todoListFlow.value.isNotEmpty()) println("123 " +viewModel.allShoppingItems())
+        return viewModel.allShoppingItems()
+//        collectAsState(listOf())).value
     }
 }
